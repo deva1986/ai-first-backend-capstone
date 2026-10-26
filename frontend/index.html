@@ -2,92 +2,189 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Assistant</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 700px;
-      margin: 50px auto;
-      padding: 20px;
-      background: #f4f6f8;
-    }
-    main {
-      background: white;
-      padding: 25px;
-      border-radius: 12px;
-    }
-    textarea {
-      width: 100%;
-      min-height: 120px;
-      box-sizing: border-box;
-      padding: 12px;
-    }
-    button {
-      margin-top: 12px;
-      padding: 12px 20px;
-      cursor: pointer;
-    }
-    #result {
-      white-space: pre-wrap;
-      margin-top: 20px;
-    }
-  </style>
-</head>
-<body>
-  <main>
-    <h1>AI Assistant</h1>
-    <p>Enter a question to get an AI-generated answer.</p>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI First Backend Capstone</title>
 
-    <form id="chat-form">
-      <textarea id="prompt" maxlength="4000"
-        placeholder="Ask your question..." required></textarea>
-      <button type="submit" id="submit-button">Ask AI</button>
-    </form>
-
-    <div id="result" role="status"></div>
-  </main>
-
-  <script>
-    const form = document.getElementById("chat-form");
-    const result = document.getElementById("result");
-    const button = document.getElementById("submit-button");
-
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      const prompt = document.getElementById("prompt").value.trim();
-
-      if (!prompt) {
-        result.textContent = "Please enter a question.";
-        return;
-      }
-
-      button.disabled = true;
-      result.textContent = "Generating response...";
-
-      try {
-        const response = await fetch("/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.detail || data.message ||
-            "Unable to get an AI response.");
+    <style>
+        * {
+            box-sizing: border-box;
         }
 
-        result.textContent = data.answer || "No answer received.";
-      } catch (error) {
-        result.textContent = "Error: " + error.message;
-      } finally {
-        button.disabled = false;
-      }
-    });
-  </script>
+        body {
+            margin: 0;
+            padding: 30px 16px;
+            font-family: Arial, sans-serif;
+            background: #f3f6fb;
+            color: #202938;
+        }
+
+        main {
+            max-width: 720px;
+            margin: 40px auto;
+            padding: 28px;
+            background: #ffffff;
+            border-radius: 14px;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #2459c4;
+        }
+
+        p {
+            line-height: 1.6;
+        }
+
+        label {
+            display: block;
+            margin: 22px 0 8px;
+            font-weight: bold;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 140px;
+            padding: 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font: inherit;
+            resize: vertical;
+        }
+
+        textarea:focus {
+            outline: 2px solid #2459c4;
+            border-color: transparent;
+        }
+
+        button {
+            margin-top: 14px;
+            padding: 12px 22px;
+            border: none;
+            border-radius: 8px;
+            background: #2459c4;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        #result {
+            margin-top: 24px;
+            padding: 16px;
+            border-radius: 8px;
+            background: #f8fafc;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            line-height: 1.6;
+        }
+
+        #result:empty {
+            display: none;
+        }
+
+        .hint {
+            color: #64748b;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <h1>AI Assistant</h1>
+
+        <p>
+            Ask a question and receive an AI-generated response.
+            Your request is processed by the backend API.
+        </p>
+
+        <form id="chat-form">
+            <label for="prompt">Your question</label>
+
+            <textarea
+                id="prompt"
+                name="prompt"
+                maxlength="4000"
+                placeholder="For example: Explain REST APIs in simple terms."
+                required
+            ></textarea>
+
+            <p class="hint">Maximum length: 4000 characters.</p>
+
+            <button id="submit-button" type="submit">
+                Ask AI
+            </button>
+        </form>
+
+        <section
+            id="result"
+            role="status"
+            aria-live="polite"
+        ></section>
+    </main>
+
+    <script>
+        const form = document.getElementById("chat-form");
+        const promptInput = document.getElementById("prompt");
+        const result = document.getElementById("result");
+        const submitButton = document.getElementById("submit-button");
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const prompt = promptInput.value.trim();
+
+            if (!prompt) {
+                result.textContent = "Please enter a question.";
+                return;
+            }
+
+            if (prompt.length > 4000) {
+                result.textContent =
+                    "Your question must not exceed 4000 characters.";
+                return;
+            }
+
+            submitButton.disabled = true;
+            result.textContent = "Generating your response...";
+
+            try {
+                const response = await fetch("/api/chat", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ prompt })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        data.detail ||
+                        data.message ||
+                        "The request failed."
+                    );
+                }
+
+                if (!data.success || typeof data.answer !== "string") {
+                    throw new Error("The server returned an invalid response.");
+                }
+
+                result.textContent = data.answer;
+            } catch (error) {
+                result.textContent =
+                    "Unable to generate a response: " + error.message;
+            } finally {
+                submitButton.disabled = false;
+            }
+        });
+    </script>
 </body>
 </html>
