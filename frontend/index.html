@@ -1,0 +1,93 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Assistant</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 700px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f4f6f8;
+    }
+    main {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      box-sizing: border-box;
+      padding: 12px;
+    }
+    button {
+      margin-top: 12px;
+      padding: 12px 20px;
+      cursor: pointer;
+    }
+    #result {
+      white-space: pre-wrap;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>AI Assistant</h1>
+    <p>Enter a question to get an AI-generated answer.</p>
+
+    <form id="chat-form">
+      <textarea id="prompt" maxlength="4000"
+        placeholder="Ask your question..." required></textarea>
+      <button type="submit" id="submit-button">Ask AI</button>
+    </form>
+
+    <div id="result" role="status"></div>
+  </main>
+
+  <script>
+    const form = document.getElementById("chat-form");
+    const result = document.getElementById("result");
+    const button = document.getElementById("submit-button");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const prompt = document.getElementById("prompt").value.trim();
+
+      if (!prompt) {
+        result.textContent = "Please enter a question.";
+        return;
+      }
+
+      button.disabled = true;
+      result.textContent = "Generating response...";
+
+      try {
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.detail || data.message ||
+            "Unable to get an AI response.");
+        }
+
+        result.textContent = data.answer || "No answer received.";
+      } catch (error) {
+        result.textContent = "Error: " + error.message;
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
