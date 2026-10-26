@@ -1,158 +1,168 @@
+
 # AI First Backend Capstone
 
-## Project Overview
+An AI-powered web application built with Python FastAPI, HTML, CSS,
+JavaScript, and the OpenAI API.
 
-AI First Backend Capstone is an AI-powered web application that allows users to submit prompts through a frontend interface and receive AI-generated responses.
+## Architecture
 
-The application uses a Laravel backend API to validate requests, communicate with a Large Language Model (LLM) API, and return responses to the frontend.
+User -> Frontend -> FastAPI Backend -> OpenAI API
+     -> FastAPI Backend -> Frontend
+
+The frontend and backend are separate components.
+The frontend sends JSON requests to the backend REST API.
+The backend validates input, calls the LLM API, and returns JSON.
 
 ## Technology Stack
 
-- **Backend:** PHP, Laravel
-- **Frontend:** HTML, CSS, JavaScript (or React)
-- **AI Integration:** LLM API
-- **API Format:** REST API with JSON
-- **Version Control:** Git and GitHub
-- **Deployment Target:** AWS
-
-## Application Architecture
-
-User → Frontend → Laravel Backend API → LLM API → Laravel Backend → Frontend
-
-The frontend communicates with the Laravel backend through a REST API. The backend validates user input, securely calls the LLM API, handles errors, and returns the generated response.
+- Backend: Python and FastAPI
+- Frontend: HTML, CSS, JavaScript
+- AI integration: OpenAI API
+- Validation: Pydantic
+- API documentation: OpenAPI / Swagger UI
+- Version control: Git and GitHub
 
 ## Features
 
-- AI-powered question-and-answer functionality
-- REST API integration
-- Request validation
-- JSON request and response handling
-- Error handling for failed LLM API requests
-- Secure API key management using environment variables
-- Separation of frontend and backend responsibilities
+- AI-powered question and answer
+- REST API with JSON request and response
+- Input validation
+- Error handling for missing credentials and API failures
+- Configurable AI model
+- Health check endpoint
+- Frontend and backend separation
 
-## API Endpoint
+## API Endpoints
 
-**POST `/api/chat`**
+### GET /
 
-### Example Request
+Serves the frontend application.
 
-```json
+### GET /health
+
+Example response:
+
 {
-  "prompt": "What is Laravel?"
+  "status": "ok"
 }
-```
 
-### Example Success Response
+### POST /api/chat
 
-```json
+Example request:
+
+{
+  "prompt": "What is FastAPI?"
+}
+
+Example successful response:
+
 {
   "success": true,
-  "answer": "Laravel is a PHP web application framework."
+  "answer": "FastAPI is a Python web framework."
 }
-```
 
-### Example Error Response
+Possible errors include:
+- 422: Invalid request
+- 502: AI provider request failed
+- 503: AI service is not configured
 
-```json
-{
-  "success": false,
-  "message": "The AI service is temporarily unavailable."
-}
-```
+## Prerequisites
 
-The exact HTTP status code and response structure should be implemented consistently in the backend.
+- Python 3.10 or a compatible newer version
+- pip
+- An OpenAI API key with API access and available quota
 
-## Setup Instructions
+## Installation
 
-### Prerequisites
+Clone the repository:
 
-- PHP version supported by the Laravel version used
-- Composer
-- Node.js and npm if using a frontend build tool
-- An API key from your chosen LLM provider
+    git clone https://github.com/deva1986/ai-first-backend-capstone.git
+    cd ai-first-backend-capstone
 
-### Installation
+Create a virtual environment:
 
-1. Clone the repository:
+    python -m venv .venv
 
-   ```bash
-   git clone https://github.com/deva1986/ai-first-backend-capstone.git
-   cd ai-first-backend-capstone
-   ```
+Activate it on Windows:
 
-2. Install PHP dependencies:
+    .venv\Scripts\activate
 
-   ```bash
-   composer install
-   ```
+Activate it on macOS or Linux:
 
-3. Create your environment file:
+    source .venv/bin/activate
 
-   ```bash
-   cp .env.example .env
-   ```
+Install dependencies:
 
-4. Generate the Laravel application key:
+    pip install -r requirements.txt
 
-   ```bash
-   php artisan key:generate
-   ```
+## Configuration
 
-5. Configure your LLM provider credentials in `.env`, using the environment variable names expected by your implementation.
+Set the API key as an environment variable.
 
-6. Start the Laravel development server:
+Windows PowerShell:
 
-   ```bash
-   php artisan serve
-   ```
+    $env:OPENAI_API_KEY="your-api-key"
 
-7. Open the application at `http://127.0.0.1:8000`.
+macOS or Linux:
 
-**Note:** These instructions assume the repository contains a Laravel application with a valid `composer.json`, `.env.example`, and the required routes and controllers. These files must be implemented before the application can run.
+    export OPENAI_API_KEY="your-api-key"
+
+Optionally configure the model:
+
+    OPENAI_MODEL=gpt-4.1-mini
+
+Never commit API keys or other secrets to GitHub.
+
+## Run the Application
+
+Start the server:
+
+    uvicorn app:app --reload
+
+Open the application:
+
+    http://127.0.0.1:8000
+
+Interactive API documentation:
+
+    http://127.0.0.1:8000/docs
+
+Health check:
+
+    http://127.0.0.1:8000/health
+
+## Testing the API
+
+Example curl request:
+
+    curl -X POST http://127.0.0.1:8000/api/chat \
+      -H "Content-Type: application/json" \
+      -d '{"prompt":"Explain REST APIs"}'
 
 ## Security
 
 - Store API keys in environment variables.
-- Never commit `.env` or other secret files to GitHub.
+- Never commit secrets to source control.
 - Validate and limit user input.
-- Handle API timeouts and provider errors gracefully.
-- Avoid exposing internal exception details to clients.
-- Configure rate limiting to help prevent API abuse.
-
-## Testing
-
-The application should be tested for:
-
-- Valid prompts and successful AI responses
-- Empty or invalid prompts
-- Prompts exceeding the allowed length
-- Missing or invalid LLM API credentials
-- LLM API failures and timeouts
-- Appropriate HTTP status codes and JSON responses
+- Handle provider failures without exposing sensitive details.
+- Use HTTPS and rate limiting in production.
 
 ## Deployment
 
-The application is intended to be deployable on AWS. Potential deployment components include:
-
-- Amazon EC2 or another suitable compute service
-- Nginx as a web server
-- PHP-FPM for Laravel
-- Environment-based secret configuration
-- HTTPS and appropriate access controls
-
-AWS deployment configuration will be added as the project progresses.
+The application can be deployed to AWS after testing and configuration.
+A production deployment should include secret management, HTTPS,
+monitoring, and suitable access controls.
 
 ## Project Status
 
-**Initial project setup — implementation in progress.**
-
-The Laravel application, frontend, LLM integration, automated tests, and deployment configuration must be completed and verified.
+Initial implementation. Run and test the application locally before
+considering it production-ready.
 
 ## Author
 
-GitHub: [deva1986](https://github.com/deva1986)
+GitHub: https://github.com/deva1986
 
 ## Assignment
 
-Scaler — Backend Projects: Deploying Backend & AI-Enabled Applications to AWS.
+Scaler - Backend Projects: Deploying Backend & AI-Enabled Applications
+to AWS.
