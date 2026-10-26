@@ -1,14 +1,19 @@
-import os
+
 import logging
+import os
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
+from openai import APIError, OpenAI
 from pydantic import BaseModel, Field
-from openai import OpenAI, APIError
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="AI First Backend Capstone")
+
+FRONTEND_FILE = Path(__file__).parent / "frontend" / "index.html"
 
 
 class ChatRequest(BaseModel):
@@ -17,7 +22,17 @@ class ChatRequest(BaseModel):
 
 @app.get("/")
 def home():
-    return {"message": "AI Backend API is running"}
+    if not FRONTEND_FILE.is_file():
+        raise HTTPException(
+            status_code=500,
+            detail="Frontend file not found"
+        )
+    return FileResponse(FRONTEND_FILE)
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
 
 
 @app.post("/api/chat")
@@ -31,7 +46,12 @@ def chat(request: ChatRequest):
         )
 
     try:
-        client = OpenAI(api_key=api_key)
+        client = OpenAI(
+            api_key=api_key,
+            timeout=30.0,
+            max_retries=1
+        )
+
         response = client.responses.create(
             model=os.getenv("OPENAI_MODEL", "gpt-4.1-mini"),
             input=request.prompt
